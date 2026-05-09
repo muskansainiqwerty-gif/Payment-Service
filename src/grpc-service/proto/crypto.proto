@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package crypto;
+
+message getaddressReq {}
+message getaddressResp {
+    int32 status = 1;
+    bool error = 2;
+    string data = 3;
+    string message = 4;
+  }
+
+  message walletValidateRequest {
+    string address = 1;
+}
+message walletValidateResponse {
+    bool error = 1;
+    string message = 2;
+    string status = 3;
+    string data = 4;
+}
+
+message walletBalanceResponse {
+    bool error = 1;
+    string message = 2;
+    string status = 3;
+    balance data = 4;
+}
+
+
+message balance {
+    float balance = 1;
+}
+service Cryptoservice {
+    rpc getaddress(getaddressReq) returns (getaddressResp) {}
+    rpc validateWalletAddress(walletValidateRequest) returns (walletValidateResponse) {}
+}

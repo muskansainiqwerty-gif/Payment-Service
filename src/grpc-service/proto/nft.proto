@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package nft;
+
+message getNftsListReq {
+     int32 limit =1 ;
+    string isListed=2;
+    int32 offset = 3;
+    string search = 4;
+    string city = 5;
+    string country = 6;
+    int32 isFeatured=7;
+}
+message getNftsListResp {
+    int32 status = 1;
+    bool error = 2;
+    getAllNfts data = 3;
+    string message = 4;
+}
+message getAllNfts {
+    int32 count = 1;
+    repeated getSingleNft rows = 2;
+}
+message getSingleNft {
+    string nftId=1;
+    string name=2;
+    string hotelId = 3;
+    string price = 4;
+    string description = 5;
+    int32 quantity =6;
+    string image=7;
+    string creator=8;
+    string address=9;
+    string latitude=10;
+    string longitude=11;
+    string blockChain =12;
+    int32 isFeatured=13;
+}
+message createNftReq {
+    string creatorId=1;
+    string creator=2;
+    string name=3;
+    string hotelId = 4;
+    string price = 5;
+    string description = 6;
+    int32 quantity =7;
+    string image=8;
+    string country=9;
+    string city=10;
+    string address=11;
+    string latitude=12;
+    string longitude=13;
+    string blockChain =14;
+    repeated gallery gallery=15;
+   }
+  message createNftResp {
+      int32 status = 1;
+      bool error = 2;
+      EmptyReq data = 3;
+      string message = 4;
+  }
+  message gallery {
+    string image = 1;
+  }
+  message EmptyReq{}
+  
+  message createGalleryReq {
+      repeated gallery gallery=1;
+      string nftId = 2;
+  }
+  
+  message removeGalleryReq {
+      string imageId = 1;
+  }
+message UpdateListNftsStatusReq {
+    string nftId=1;
+    string isListed = 2;
+    int32 listedQty=3;
+}
+message UpdateListNftsStatusResp {
+    int32 status = 1;
+      bool error = 2;
+      SuccessResponse data = 3;
+      string message = 4;
+}
+message SuccessResponse {
+    string status = 1;
+}
+message UpdateFeaturedNftsStatusReq {
+    string nftId=1;
+    int32 isFeatured= 2;
+
+}
+message UpdateFeaturedNftsStatusResp {
+    int32 status = 1;
+      bool error = 2;
+      SuccessResponse data = 3;
+      string message = 4;
+}
+
+message requestBody {
+    string nftId = 1;
+    string nftListId = 2;
+    int32 quantity = 3;
+    string currency = 4;
+    string walletAddress = 5;
+    string type = 6;
+    string senderAddress = 7;
+    string userId = 8;
+    string walletClientId = 9;
+    string email = 10;
+    string firstName = 11;
+    string lastName = 12;
+}
+
+message purchaseNftReq {
+    requestBody data=1;
+}
+
+message purchaseNftRes {
+    int32 status = 1;
+    bool error = 2;
+    string message = 4;
+}
+
+service NftService {
+    
+    rpc getNftsList (getNftsListReq) returns (getNftsListResp) {}
+    rpc createNft (createNftReq) returns (createNftResp) {}
+    rpc addGalleryImages (createGalleryReq) returns (createNftResp) {}
+    rpc removeGalleryImages (removeGalleryReq) returns (createNftResp) {}
+     rpc updateNftType (UpdateListNftsStatusReq) returns (UpdateListNftsStatusResp) {}
+     rpc updateFeatured(UpdateFeaturedNftsStatusReq) returns (UpdateFeaturedNftsStatusResp) {}
+     rpc purchaseNft(purchaseNftReq) returns (purchaseNftRes) {}
+}

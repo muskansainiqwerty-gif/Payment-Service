@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package bot;
+
+service BotService {
+  rpc saveUserData (saveUserDataRequest) returns (saveUserDataResponse);
+}
+
+message saveUserDataRequest {
+  string name = 1;
+  string telegramId = 2;
+  string userName = 3;
+}
+
+message saveUserDataResponse {
+  bool error = 1;
+  string message = 2;
+  string token = 3;
+  string name = 4;
+  string userName = 5;
+  string referralCode = 6;
+}

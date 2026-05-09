@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package admin;
+
+message feeReq {}
+
+message feeRes {
+    int32 status = 1;
+    bool error = 2;
+    getFeeData data = 3;
+    string message = 4;
+}
+
+message getFeeData {
+    string plateformFee = 1;
+}
+message countrycheckReq {
+    string name =1;
+    string iso3 =2;
+}
+message countrycheckResp {
+    int32 status = 1;
+    bool error = 2;
+    string data = 3;
+    string message = 4;
+  }
+
+
+
+message allcountryReq {}
+
+message allcountryResp {
+    int32 status = 1;
+    bool error = 2;
+    allcountry data = 3;
+    string message = 4;
+  }
+
+  message allcountry {
+    int32 count = 1;
+    repeated allcountrydata rows = 2;
+}
+message allcountrydata {
+    string id = 1;
+    string country_id = 2;
+    string name = 3;
+    string iso3 = 4;
+    string createdAt = 5;
+    string updatedAt=6;
+   }
+   message getmaintenanceReq {}
+
+   message getmaintenanceResp {
+     int32 status = 1;
+     bool error = 2;
+     getplateform data = 3;
+     string message = 4;
+   }
+   message getplateform {
+     string key = 1;
+     string value =2;
+     string createdAt=3;
+     string updatedAt=4;
+ }
+
+
+
+
+service AdminService {
+   rpc setFee(feeReq) returns (feeRes) {};
+   rpc countrycheck (countrycheckReq) returns (countrycheckResp) {};
+   rpc allcountry (allcountryReq) returns (allcountryResp) {};
+   rpc getmaintenance (getmaintenanceReq) returns (getmaintenanceResp) {}
+}
+

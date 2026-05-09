@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package user;
+
+message saveUserDataRequest {
+  string name = 1;
+  string telegramId = 2;
+  string userName = 3;
+}
+
+message saveUserDataResponse {
+  bool error = 1;
+  string message = 2;
+  string token = 3;
+  string name = 4;
+  string userName = 5;
+  string referralCode = 6;
+}
+
+// Define the request message
+message BlockUserRequest {}
+
+// Define the response message
+message BlockUserResponse {
+  string event = 1;
+  string type = 2;
+  string message = 3;
+  int32 status = 4;
+  string userId = 5;
+  string keyName = 6;
+}
+
+
+service UserService {
+  rpc saveUserData (saveUserDataRequest) returns (saveUserDataResponse);
+  rpc BlockUser (BlockUserRequest) returns (BlockUserResponse);
+
+}
+

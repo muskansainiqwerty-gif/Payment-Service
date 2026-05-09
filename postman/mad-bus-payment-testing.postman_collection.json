@@ -1,0 +1,216 @@
+{
+  "info": {
+    "_postman_id": "6f3f1781-5e8f-4456-b87c-62cf76d16537",
+    "name": "Mad Bus Payment Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for testing payment and webhook APIs in mad-bus-new."
+  },
+  "item": [
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-idempotency-key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 199,\n  \"currency\": \"INR\",\n  \"description\": \"Premium pass purchase\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"feature\": \"payment-test\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/game/api/v1/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["game", "api", "v1", "payments"]
+            },
+            "description": "Creates a payment and queues it for processing. Saves paymentId and orderId from response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "pm.test('CreateResponse shape is valid', function () {",
+                  "  pm.expect(res).to.have.property('error');",
+                  "  pm.expect(res).to.have.property('message');",
+                  "  pm.expect(res).to.have.property('data');",
+                  "  pm.expect(res).to.have.property('status');",
+                  "});",
+                  "",
+                  "if (res && res.data) {",
+                  "  if (res.data.id) {",
+                  "    pm.collectionVariables.set('paymentId', res.data.id);",
+                  "  }",
+                  "  if (res.data.orderId) {",
+                  "    pm.collectionVariables.set('orderId', res.data.orderId);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Payment By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/game/api/v1/payments/{{paymentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["game", "api", "v1", "payments", "{{paymentId}}"]
+            },
+            "description": "Fetches a single payment using paymentId captured from Create Payment."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "pm.test('Has payment data', function () {",
+                  "  pm.expect(res.data).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Payments (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/game/api/v1/payments?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["game", "api", "v1", "payments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Fetch paginated payments list for current request user."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhook",
+      "item": [
+        {
+          "name": "Payment Webhook Success",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const secret = pm.collectionVariables.get('razorpayWebhookSecret');",
+                  "const rawBody = pm.request.body ? pm.request.body.raw : '';",
+                  "const signature = CryptoJS.HmacSHA256(rawBody, secret).toString(CryptoJS.enc.Hex);",
+                  "pm.variables.set('webhookSignature', signature);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-razorpay-signature",
+                "value": "{{webhookSignature}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": \"evt_{{$timestamp}}\",\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"success\",\n  \"payload\": {\n    \"provider\": \"razorpay\",\n    \"note\": \"webhook test from postman\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/game/api/v1/webhook/payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["game", "api", "v1", "webhook", "payment"]
+            },
+            "description": "Simulates signed Razorpay webhook. Requires orderId from Create Payment."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3002"
+    },
+    {
+      "key": "idempotencyKey",
+      "value": "pm-idem-001"
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "razorpayWebhookSecret",
+      "value": "webhook_secret_006616"
+    }
+  ]
+}

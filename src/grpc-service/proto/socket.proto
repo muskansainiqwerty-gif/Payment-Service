@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package socket;
+
+message SuccessResponse {
+    string status = 1;
+}
+message UpdateFeaturedNftsStatusReq {
+    string nftId=1;
+    int32 isFeatured= 2;
+
+}
+message UpdateFeaturedNftsStatusResp {
+    int32 status = 1;
+      bool error = 2;
+      SuccessResponse data = 3;
+      string message = 4;
+}
+
+message verifyNftListReq {
+    string nftId = 1;
+    string nftListId = 2;
+}
+
+message verifyNftListRes {
+    int32 status = 1;
+    bool error = 2;
+    nftListDetail data = 3;
+    string message = 4;
+}
+
+message nftListDetail {
+    string nftId=1;
+}
+message purchaseNftReq {
+    request request= 1;
+    string userId= 2;
+    string token= 3;
+    user user= 4;
+  }
+
+  message user {
+    data data=1;
+  }
+  message data {
+    string walletClientId=1;
+    string id=2;
+    string email= 3;
+    string status= 4;
+    string phoneNumber=5;
+    string kycStatus=6;
+    string is2Fa=7;
+    string isSocial=8;
+    UserDetail UserDetail=9;
+  }
+  message UserDetail {
+    string firstName=1;
+    string lastName=2;
+    string userName=3;
+  }
+  message purchaseNftRes {
+    int32 status = 1;
+    bool error = 2;
+    string data = 3;
+    string message = 4;
+  }
+
+  message request {
+    string nftId=1;
+    string nftListId=2;
+    string quantity=3;
+    string currency=4;
+    string walletAddress=5;
+    string type=6;
+    string senderAddress=7;
+  string price=8;
+  }
+
+service SocketService {
+    rpc updateFeatured(UpdateFeaturedNftsStatusReq) returns (UpdateFeaturedNftsStatusResp) {}
+    rpc verifyNftList (verifyNftListReq) returns (verifyNftListRes) {}
+    rpc purchaseNft(purchaseNftReq) returns (purchaseNftRes) {};
+}
