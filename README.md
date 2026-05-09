@@ -1,66 +1,153 @@
-Onboarding Service
+## Mad Bus Backend (NestJS)
 
-Description
-User Service is a microservice built with **NestJS** that handles core user-related operations. It provides secure and scalable endpoints for SSO login, authentication token validation, game level updates, and user session exit. The service is designed to work within a microservices architecture and integrates with RabbitMQ and Redis for messaging and caching.
+Backend service built with NestJS, Sequelize (MySQL), Redis, and RabbitMQ.
 
-Version
-Current version: 0.0.1
+The current implementation includes a complete payment processing flow with:
 
-Installation
-$ npm install
+- asynchronous queue-based processing
+- idempotency handling
+- webhook signature validation
+- retry and resilience patterns
+- Swagger and Postman-ready testing support
 
+## Version
 
-Running the app
+`0.0.1`
 
-# development
-$ npm run start
+## Tech Stack
 
-# watch mode
-$ npm run start:dev
+- NestJS
+- Sequelize + MySQL
+- Redis
+- RabbitMQ (`amqplib`)
+- Swagger (`@nestjs/swagger`)
+- Class Validator / Class Transformer
 
-# debug mode
-$ npm run start:debug
+## Project Setup
 
-# staging environment
-$ npm run start:stage
+```bash
+npm install
+```
 
-# production mode
-$ npm run start:prod
+## Run
 
-Test
-# unit tests
-$ npm run test
+```bash
+# normal
+npm run start
 
-# e2e tests
-$ npm run test:e2e
+# watch
+npm run start:dev
 
-# test coverage
-$ npm run test:cov
+# debug
+npm run start:debug
 
-## Key Features
+# stage
+npm run start:stage
 
-- Single Sign-On support for seamless authentication  
-- JWT-based token verification  
-- Update and track game progression  
-- Redis caching  
-- RabbitMQ integration for microservice communication  
-- Secure API endpoints with passport strategies  
-- Sequelize ORM for database management
+# prod
+npm run start:prod
+```
 
----
+## Test Commands
 
-## Core Dependencies
+```bash
+npm run test
+npm run test:e2e
+npm run test:cov
+```
 
-- NestJS Framework – Progressive Node.js framework for building efficient and scalable server-side applications  
-- RabbitMQ – Message broker for microservice communication  
-- Redis – In-memory data structure store for caching  
-- Sequelize – Promise-based ORM for MySQL  
-- Passport – Authentication middleware  
-- JWT – JSON Web Tokens for stateless auth  
+## Environment Requirements
 
-## Development Tools
+Minimum required values in `.env`:
 
-- ESLint – Linting utility  
-- Prettier – Code formatter  
-- Jest – Testing framework 
+- `PORT=3002`
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME_DEVELOPMENT`
+- `REDIS_URL`
+- `RABBIT_MQ=amqp://guest:guest@localhost`
+- `RAZORPAY_KEY_ID`
+- `RAZORPAY_KEY_SECRET`
+- `RAZORPAY_WEBHOOK_SECRET`
+- `ENABLE_SWAGGER=true` (to enable docs)
 
+## API Base URLs
+
+- Base API: `http://localhost:3002/game/api/v1`
+- Swagger: `http://localhost:3002/api` (when `ENABLE_SWAGGER=true`)
+
+## Payment Module Overview
+
+### Endpoints
+
+- `POST /game/api/v1/payments`
+
+  - Creates payment in `PENDING`
+  - Accepts `x-idempotency-key` (optional)
+  - Publishes job to RabbitMQ
+
+- `GET /game/api/v1/payments/:id`
+
+  - Fetches payment by ID
+
+- `GET /game/api/v1/payments?page=1&limit=10`
+
+  - Fetches paginated payments
+
+- `POST /game/api/v1/webhook/payment`
+  - Processes signed webhook payload
+  - Header required: `x-razorpay-signature`
+
+### State Flow
+
+`PENDING -> PROCESSING -> SUCCESS`
+
+or
+
+`PENDING -> PROCESSING -> (retry) -> FAILED`
+
+Webhook can also update status to `SUCCESS` or `FAILED`.
+
+## Queue and Retry Design
+
+- Producer publishes payment jobs to RabbitMQ queue
+- Worker consumes from main queue
+- On failure, message is routed to retry queue with delay and retry count
+- After max retries, payment is marked `FAILED`
+
+Queue constants are defined in:
+
+- `src/modules/payment/constants/payment.constants.ts`
+
+## Idempotency Design
+
+Idempotency is handled using:
+
+1. `payments.idempotencyKey` for replay of same request
+2. `payment_idempotency_records` table for request hash and response mapping
+3. Redis key cache for quick idempotency key lookup metadata
+
+If same idempotency key is reused with a different payload, API returns `400`.
+
+## Security and Validation
+
+- Webhook HMAC signature validation using `RAZORPAY_WEBHOOK_SECRET`
+- Request DTO validation with `class-validator`
+- Global exception filters and standardized response shape:
+  - `{ error, message, data, status }`
+
+## Postman Collection
+
+Import:
+
+- `postman/mad-bus-payment-testing.postman_collection.json`
+
+This collection includes:
+
+- create payment
+- fetch payment by id
+- list payments
+- signed webhook calls
+
+## Notes
+
+- Database sync is enabled at startup using Sequelize sync with alter.
+- For production environments, prefer migrations and controlled schema rollout.
