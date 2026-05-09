@@ -1,9 +1,9 @@
 {
   "info": {
     "_postman_id": "6f3f1781-5e8f-4456-b87c-62cf76d16537",
-    "name": "Mad Bus Payment Testing",
+    "name": "Payment Testing",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Postman collection for testing payment and webhook APIs in mad-bus-new."
+    "description": "Postman collection for testing payment and webhook APIs."
   },
   "item": [
     {

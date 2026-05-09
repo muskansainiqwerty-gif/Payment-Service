@@ -19,7 +19,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [process.env.RABBIT_MQ],
-      queue: 'madBusEmailQueue',
+      queue: 'emailQueue',
       noAck: false,
       prefetchCount: 1,
     },

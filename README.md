@@ -1,4 +1,4 @@
-## Mad Bus Backend (NestJS)
+## Payment Backend (NestJS)
 
 Backend service built with NestJS, Sequelize (MySQL), Redis, and RabbitMQ.
 
@@ -138,7 +138,7 @@ If same idempotency key is reused with a different payload, API returns `400`.
 
 Import:
 
-- `postman/mad-bus-payment-testing.postman_collection.json`
+- `postman/payment-testing.postman_collection.json`
 
 This collection includes:
 
